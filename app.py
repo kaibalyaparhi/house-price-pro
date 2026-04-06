@@ -1,7 +1,7 @@
+import os
 import streamlit as st
-import pandas as pd
-import numpy as np
-import pickle
+
+st.write("FILES IN APP:", os.listdir())
 
 st.set_page_config(page_title="House AI", layout="wide")
 
