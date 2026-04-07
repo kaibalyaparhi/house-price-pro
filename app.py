@@ -17,9 +17,10 @@ def login():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if username == "admin" and password == "1234":
+        if username == "Amit" and password == "1234":
             st.session_state["login"] = True
             st.success("Login Successful ✅")
+            st.rerun()   # 🔥 FIX
         else:
             st.error("Invalid Credentials ❌")
 
@@ -72,7 +73,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "📜 History"
 ])
 
-# ================= TAB 1: PREDICTION =================
+# ================= TAB 1 =================
 with tab1:
 
     st.subheader("Enter House Details")
@@ -89,7 +90,6 @@ with tab1:
         parking = st.number_input("Parking", 0, 5, 1)
 
     if st.button("🚀 Predict Price"):
-
         try:
             data = np.array([[area, bedrooms, bathrooms, stories, parking]])
             result = model.predict(data)[0]
@@ -119,7 +119,7 @@ try:
 except:
     df = None
 
-# ================= TAB 2: DATA =================
+# ================= TAB 2 =================
 with tab2:
 
     st.subheader("📊 Data Insights")
@@ -133,13 +133,12 @@ with tab2:
     else:
         st.warning("Dataset not loaded")
 
-# ================= TAB 3: SHAP =================
+# ================= TAB 3 =================
 with tab3:
 
     st.subheader("🔍 Explainable AI (SHAP)")
 
     if st.button("Show SHAP Explanation"):
-
         try:
             sample = np.array([[2000, 3, 2, 2, 1]])
 
@@ -153,7 +152,7 @@ with tab3:
         except Exception as e:
             st.error(f"SHAP error: {e}")
 
-# ================= TAB 4: HISTORY =================
+# ================= TAB 4 =================
 with tab4:
 
     st.subheader("📜 Prediction History")
