@@ -1,3 +1,4 @@
+
 import streamlit as st
 import numpy as np
 import pickle
@@ -6,81 +7,62 @@ import shap
 import matplotlib.pyplot as plt
 
 # ================= PAGE =================
-st.set_page_config(page_title="🏠 House Price Predictor", layout="wide")
+st.set_page_config(page_title="🏠 House AI Dashboard", layout="wide")
 
-# ================= UI =================
+# ================= PREMIUM UI =================
 st.markdown("""
 <style>
-body {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+.stApp {
+    background: linear-gradient(135deg, #141E30, #243B55);
+    color: white;
 }
-h1 {color:white;text-align:center;}
-.stButton>button {
-    background: linear-gradient(90deg,#00c6ff,#0072ff);
-    color:white;
-    border-radius:10px;
-    height:3em;
-    font-size:18px;
+.card {
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🏠 House Price Prediction + Explainable AI")
+# ================= TITLE =================
+st.title("🏠 House Price AI Dashboard 🚀")
 
 # ================= LOAD MODEL =================
 try:
     model = pickle.load(open("house_model.pkl", "rb"))
-    st.success("✅ Model Loaded Successfully")
-except Exception as e:
-    st.error(f"❌ Model loading failed: {e}")
+except:
+    st.error("Model load failed")
     st.stop()
 
-# ================= INPUT =================
-col1, col2 = st.columns(2)
+# ================= TABS =================
+tab1, tab2, tab3 = st.tabs(["💰 Prediction", "📊 Data Insights", "🔍 Explain AI"])
 
-with col1:
-    area = st.number_input("📐 Area (sq ft)", 500, 10000, 2000)
-    bedrooms = st.number_input("🛏 Bedrooms", 1, 10, 3)
-    bathrooms = st.number_input("🛁 Bathrooms", 1, 10, 2)
+# ================= TAB 1 =================
+with tab1:
 
-with col2:
-    stories = st.number_input("🏢 Stories", 1, 5, 2)
-    parking = st.number_input("🚗 Parking", 0, 5, 1)
+    st.markdown("## Enter House Details")
 
-# ================= PREDICT =================
-if st.button("🚀 Predict Price"):
+    col1, col2 = st.columns(2)
 
-    try:
+    with col1:
+        area = st.number_input("Area", 500, 10000, 2000)
+        bedrooms = st.number_input("Bedrooms", 1, 10, 3)
+        bathrooms = st.number_input("Bathrooms", 1, 10, 2)
+
+    with col2:
+        stories = st.number_input("Stories", 1, 5, 2)
+        parking = st.number_input("Parking", 0, 5, 1)
+
+    if st.button("🚀 Predict Price"):
         data = np.array([[area, bedrooms, bathrooms, stories, parking]])
         result = model.predict(data)[0]
+        st.success(f"💰 Price: ₹ {round(result,2)}")
 
-        st.success(f"💰 Estimated Price: ₹ {round(result, 2)}")
-
-        # ================= SHAP =================
-        st.markdown("## 🔍 SHAP Explanation")
-
-        try:
-            explainer = shap.Explainer(model)
-            shap_values = explainer(data)
-
-            fig, ax = plt.subplots()
-            shap.plots.waterfall(shap_values[0], show=False)
-            st.pyplot(fig)
-
-        except Exception as e:
-            st.warning(f"SHAP not supported for this model: {e}")
-
-    except Exception as e:
-        st.error(f"Prediction error: {e}")
-
-# ================= DATA VIS =================
-st.markdown("---")
-st.markdown("## 📊 Data Visualization")
-
+# ================= LOAD DATA =================
 try:
     df = pd.read_csv("Housing.csv")
 
-    # Fix broken CSV (no header case)
     if 'area' not in df.columns:
         columns = [
             'price','area','bedrooms','bathrooms','stories',
@@ -89,13 +71,43 @@ try:
         ]
         df = pd.read_csv("Housing.csv", names=columns, header=None)
 
-    if 'area' in df.columns and 'price' in df.columns:
-        st.scatter_chart(df[['area','price']])
-    else:
-        st.warning("Columns missing for visualization")
+except:
+    df = None
 
-except Exception as e:
-    st.warning(f"Dataset error: {e}")
+# ================= TAB 2 =================
+with tab2:
+
+    st.markdown("## 📊 Data Insights")
+
+    if df is not None:
+        st.subheader("Area vs Price")
+        st.scatter_chart(df[['area','price']])
+
+        st.subheader("Distribution")
+        st.bar_chart(df[['bedrooms','bathrooms','stories']])
+
+    else:
+        st.warning("Dataset not loaded")
+
+# ================= TAB 3 =================
+with tab3:
+
+    st.markdown("## 🔍 Explainable AI (SHAP)")
+
+    if st.button("Show SHAP Explanation"):
+
+        try:
+            sample = np.array([[2000, 3, 2, 2, 1]])
+
+            explainer = shap.Explainer(model)
+            shap_values = explainer(sample)
+
+            fig, ax = plt.subplots()
+            shap.plots.waterfall(shap_values[0], show=False)
+            st.pyplot(fig)
+
+        except Exception as e:
+            st.error(f"SHAP error: {e}")
 
 # ================= FEATURE IMPORTANCE =================
 st.markdown("---")
@@ -105,8 +117,8 @@ try:
     fi = pd.read_csv("feature_importance.csv")
     st.bar_chart(fi.set_index("feature"))
 except:
-    st.info("Feature importance not available")
+    st.info("No feature importance file")
 
 # ================= FOOTER =================
 st.markdown("---")
-st.markdown("🚀 Built by Kaibalya | ML + Explainable AI")
+st.markdown("🚀 Built by Kaibalya | AI Dashboard")
